@@ -3,19 +3,17 @@ const app = express()
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
 
+const utils = require('./utils')
+
+// TODO: implentation
 const max_players = 3
 const max_undeads = 10
+
+let hero = null
 const players = []
 let undeads = []
+
 const directions = ['left', 'right']
-
-function randomXPosition () {
-  return Math.floor((Math.random() * 800) + 1)
-}
-
-function randomColor () {
-  return '#'+Math.floor(Math.random() * 16777215).toString(16)
-}
 
 function loop () {
   // 1 chance in 50
@@ -55,38 +53,44 @@ io.on('connection', function (socket) {
   socket.on('join', function () {
     console.log('join')
 
-    const player = { name: 'Player 1', x: randomXPosition(), color: randomColor() }
+    const newHero = {
+      name: 'Player 1',
+      x: utils.randomXPosition(),
+      color: utils.randomColor()
+    }
 
-    players.push(player)
+    hero = newHero
+    players.push(newHero)
 
-    console.log(players)
-
-    io.emit('join', { players: players, player: player, undeads: undeads })
+    // Broadcast to hero only
+    socket.emit('heroCreated', { hero, players, undeads })
+    // Broadcast to all players but not hero
+    socket.broadcast.emit('playerCreated', players)
 
     // setInterval(() => loop(), 300)
-    setInterval(() => loop(), 2000)
+    // setInterval(() => loop(), 2000)
   })
 
   socket.on('disconnect', function () {
-    console.log('player quit')
+    // console.log('player quit')
 
     players.splice(1, 1)
 
-    console.log(players)
+    // console.log(players)
 
     socket.broadcast.emit('quit', players)
   })
 
   socket.on('moveLeft', function (xPosition) {
-    console.log('moveLeft, ', xPosition)
+    // console.log('moveLeft, ', xPosition)
     socket.emit('move', xPosition -= 3)
-    // socket.broadcast.emit('moved', xPosition -= 3)
+    io.emit('playerMoved', players)
   })
 
   socket.on('moveRight', function (xPosition) {
-    console.log('moveRight, ', xPosition)
+    // console.log('moveRight, ', xPosition)
     socket.emit('move', xPosition += 3)
-    // socket.broadcast.emit('moved', xPosition += 3)
+    io.emit('playerMoved', players)
   })
 })
 
