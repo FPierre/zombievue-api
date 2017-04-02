@@ -1,5 +1,5 @@
 {
-  "name": "zombievue-api-2",
+  "name": "zombievue-api",
   "version": "1.0.0",
   "main": "index.js",
   "author": "pflauder@gmail.com",
@@ -7,5 +7,10 @@
   "dependencies": {
     "express": "^4.15.2",
     "socket.io": "^1.7.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "socket.io-client": "^1.7.3"
   }
 }
