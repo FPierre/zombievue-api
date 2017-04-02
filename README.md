@@ -1,9 +1,15 @@
 # Zombievue-api
 
-## Run
+## Start
 
 ```bash
 $ nodejs index.js
+```
+
+## Run tests
+
+```bash
+$ mocha
 ```
 
 ## TODO
