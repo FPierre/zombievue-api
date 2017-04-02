@@ -3,23 +3,73 @@ const app = express()
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
 
-// app.use(express.static(__dirname + '/bower_components'))
+const max_players = 3
+const max_undeads = 10
+const players = []
+const undeads = []
 
-// app.get('/', function(req, res,next) {
-//   res.sendFile(__dirname + '/index.html')
-// })
+function randomXPosition () {
+  return Math.floor((Math.random() * 800) + 1)
+}
 
-io.on('connection', function (client) {
+function randomColor () {
+  return '#'+Math.floor(Math.random() * 16777215).toString(16)
+}
+
+function loop () {
+  const directions = ['left', 'right']
+
+  // 1 chance in 30
+  if (Math.floor(Math.random() * 30) === 0) {
+    // 1 chance in 2
+    const direction = directions[Math.floor(Math.random() * 2)]
+    const xPosition = direction === 'left' ? 0 : 800
+
+    undeads.push({ direction: direction, x: xPosition, color: '#cc0000' })
+
+    console.log('undeadCreated')
+
+    io.emit('undeadCreated', { undeads: undeads })
+  }
+}
+
+io.on('connection', function (socket) {
   console.log('connection')
 
-  client.on('connect', function (data) {
-    console.log('connect')
-    client.emit('connected')
+  socket.on('join', function () {
+    console.log('join')
+
+    const player = { name: 'Player 1', x: randomXPosition(), color: randomColor() }
+
+    players.push(player)
+
+    console.log(players)
+
+    io.emit('join', { players: players, player: player, undeads: undeads })
+
+    setInterval(() => loop(), 300)
   })
 
-  client.on('move', function (xPosition) {
-    console.log('move')
-    client.broadcast.emit('moved', xPosition)
+  socket.on('disconnect', function () {
+    console.log('player quit')
+
+    players.splice(1, 1)
+
+    console.log(players)
+
+    socket.broadcast.emit('quit', players)
+  })
+
+  socket.on('moveLeft', function (xPosition) {
+    console.log('moveLeft, ', xPosition)
+    socket.emit('move', xPosition -= 3)
+    // socket.broadcast.emit('moved', xPosition -= 3)
+  })
+
+  socket.on('moveRight', function (xPosition) {
+    console.log('moveRight, ', xPosition)
+    socket.emit('move', xPosition += 3)
+    // socket.broadcast.emit('moved', xPosition += 3)
   })
 })
 
