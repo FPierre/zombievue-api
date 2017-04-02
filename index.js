@@ -6,7 +6,8 @@ const io = require('socket.io')(server)
 const max_players = 3
 const max_undeads = 10
 const players = []
-const undeads = []
+let undeads = []
+const directions = ['left', 'right']
 
 function randomXPosition () {
   return Math.floor((Math.random() * 800) + 1)
@@ -17,19 +18,34 @@ function randomColor () {
 }
 
 function loop () {
-  const directions = ['left', 'right']
-
-  // 1 chance in 30
-  if (Math.floor(Math.random() * 30) === 0) {
+  // 1 chance in 50
+  if (Math.floor(Math.random() * 2) === 0) {
     // 1 chance in 2
     const direction = directions[Math.floor(Math.random() * 2)]
     const xPosition = direction === 'left' ? 0 : 800
 
     undeads.push({ direction: direction, x: xPosition, color: '#cc0000' })
 
-    console.log('undeadCreated')
+    console.log('undeadCreated ', undeads)
 
-    io.emit('undeadCreated', { undeads: undeads })
+    io.emit('undeadCreated', undeads)
+  }
+
+  if (undeads.length > 0) {
+    undeads = undeads.map((undead) => {
+      const x = undead.x
+      let newXPosition = x + 3
+
+      if (undead.direction === 'right') {
+        newXPosition = x - 3
+      }
+
+      undead.x = newXPosition
+
+      return undead
+    })
+
+    io.emit('undeadsMoved', undeads)
   }
 }
 
@@ -47,7 +63,8 @@ io.on('connection', function (socket) {
 
     io.emit('join', { players: players, player: player, undeads: undeads })
 
-    setInterval(() => loop(), 300)
+    // setInterval(() => loop(), 300)
+    setInterval(() => loop(), 2000)
   })
 
   socket.on('disconnect', function () {
