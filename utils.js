@@ -15,6 +15,6 @@ module.exports = {
       'The Punisher',
       'The Impaler',
       'The Crucifier'
-    ][playerId]
+    ][playerId - 1]
   }
 }
