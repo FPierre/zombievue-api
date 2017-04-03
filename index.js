@@ -5,13 +5,13 @@ const io = require('socket.io')(server)
 
 const utils = require('./utils')
 
-// TODO: implentation
+// TODO: implementation
 const max_players = 3
 const max_undeads = 10
 
 let hero = null
 const players = []
-let undeads = []
+const undeads = []
 
 const directions = ['left', 'right']
 
@@ -20,9 +20,9 @@ function loop () {
   if (Math.floor(Math.random() * 2) === 0) {
     // 1 chance in 2
     const direction = directions[Math.floor(Math.random() * 2)]
-    const xPosition = direction === 'left' ? 0 : 800
+    const position = direction === 'left' ? 0 : 800
 
-    undeads.push({ direction: direction, x: xPosition, color: '#cc0000' })
+    undeads.push({ direction: direction, x: position, color: '#cc0000' })
 
     console.log('undeadCreated ', undeads)
 
@@ -30,15 +30,15 @@ function loop () {
   }
 
   if (undeads.length > 0) {
-    undeads = undeads.map((undead) => {
-      const x = undead.x
-      let newXPosition = x + 3
+    undeads.map((undead) => {
+      const position = undead.x
+      let newPosition = position + 3
 
       if (undead.direction === 'right') {
-        newXPosition = x - 3
+        newPosition = x - 3
       }
 
-      undead.x = newXPosition
+      undead.x = newPosition
 
       return undead
     })
@@ -55,7 +55,7 @@ io.on('connection', function (socket) {
 
     const newHero = {
       name: 'Player 1',
-      x: utils.randomXPosition(),
+      x: utils.randomPosition(),
       color: utils.randomColor()
     }
 
@@ -81,16 +81,16 @@ io.on('connection', function (socket) {
     socket.broadcast.emit('quit', players)
   })
 
-  socket.on('moveLeft', function (xPosition) {
-    // console.log('moveLeft, ', xPosition)
-    socket.emit('move', xPosition -= 3)
-    io.emit('playerMoved', players)
+  socket.on('moveLeft', function (position) {
+    // console.log('moveLeft, ', position)
+    socket.emit('moved', position -= 3)
+    socket.broadcast.emit('playerMoved', players)
   })
 
-  socket.on('moveRight', function (xPosition) {
-    // console.log('moveRight, ', xPosition)
-    socket.emit('move', xPosition += 3)
-    io.emit('playerMoved', players)
+  socket.on('moveRight', function (position) {
+    // console.log('moveRight, ', position)
+    socket.emit('moved', position += 3)
+    socket.broadcast.emit('playerMoved', players)
   })
 })
 

@@ -1,6 +1,6 @@
 module.exports = {
   // Return random position between the game size (0px to 800px)
-  randomXPosition: () => {
+  randomPosition: () => {
     return Math.floor((Math.random() * 800) + 1)
   },
   // Return hexadecimal color string for player color
