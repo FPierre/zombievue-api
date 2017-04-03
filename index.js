@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
 
       const hero = {
         id: heroId,
-        name: utils.playerName(),
+        name: utils.playerName(heroId),
         x: utils.playerPosition(),
         color: utils.playerColor()
       }
@@ -79,9 +79,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     // console.log('player quit')
 
-    players.splice(1, 1)
-
-    // console.log(players)
+    // players.splice(1, 1)
 
     socket.broadcast.emit('quit', players)
   })
