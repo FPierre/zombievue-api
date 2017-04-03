@@ -4,6 +4,10 @@
   "main": "index.js",
   "author": "pflauder@gmail.com",
   "license": "MIT",
+  "scripts": {
+    "dev": "node index.js",
+    "test": "mocha"
+  },
   "dependencies": {
     "express": "^4.15.2",
     "socket.io": "^1.7.3"

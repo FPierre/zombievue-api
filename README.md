@@ -1,15 +1,15 @@
 # Zombievue-api
 
-## Start
+## Start server
 
 ```bash
-$ nodejs index.js
+$ yarn run dev
 ```
 
 ## Run tests
 
 ```bash
-$ mocha
+$ yarn run test
 ```
 
 ## TODO
