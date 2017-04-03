@@ -5,9 +5,8 @@ const io = require('socket.io')(server)
 
 const utils = require('./utils')
 
-// TODO: implentation
-const max_players = 3
-const max_undeads = 10
+const maxPlayers = 5
+const maxUndeads = 10
 
 let hero = null
 const players = []
@@ -16,17 +15,19 @@ let undeads = []
 const directions = ['left', 'right']
 
 function loop () {
-  // 1 chance in 50
-  if (Math.floor(Math.random() * 2) === 0) {
-    // 1 chance in 2
-    const direction = directions[Math.floor(Math.random() * 2)]
-    const xPosition = direction === 'left' ? 0 : 800
+  if (undeads.length <= maxUndeads) {
+    // 1 chance in 50
+    if (Math.floor(Math.random() * 2) === 0) {
+      // 1 chance in 2
+      const direction = directions[Math.floor(Math.random() * 2)]
+      const position = direction === 'left' ? 0 : 800
 
-    undeads.push({ direction: direction, x: xPosition, color: '#cc0000' })
+      undeads.push({ direction: direction, x: position, color: '#cc0000' })
 
-    console.log('undeadCreated ', undeads)
+      console.log('undeadCreated ', undeads)
 
-    io.emit('undeadCreated', undeads)
+      io.emit('undeadCreated', undeads)
+    }
   }
 
   if (undeads.length > 0) {
@@ -47,16 +48,17 @@ function loop () {
   }
 }
 
-io.on('connection', function (socket) {
+io.on('connection', (socket) => {
   console.log('connection')
 
-  socket.on('join', function () {
+  socket.on('join', () => {
     console.log('join')
 
     const newHero = {
-      name: 'Player 1',
-      x: utils.randomXPosition(),
-      color: utils.randomColor()
+      id:
+      name: utils.playerName(),
+      x: utils.playerPosition(),
+      color: utils.playerColor()
     }
 
     hero = newHero
@@ -71,7 +73,7 @@ io.on('connection', function (socket) {
     // setInterval(() => loop(), 2000)
   })
 
-  socket.on('disconnect', function () {
+  socket.on('disconnect', () => {
     // console.log('player quit')
 
     players.splice(1, 1)
@@ -81,15 +83,15 @@ io.on('connection', function (socket) {
     socket.broadcast.emit('quit', players)
   })
 
-  socket.on('moveLeft', function (xPosition) {
-    // console.log('moveLeft, ', xPosition)
-    socket.emit('move', xPosition -= 3)
+  socket.on('moveLeft', (position) => {
+    // console.log('moveLeft, ', position)
+    socket.emit('move', position -= 3)
     io.emit('playerMoved', players)
   })
 
-  socket.on('moveRight', function (xPosition) {
-    // console.log('moveRight, ', xPosition)
-    socket.emit('move', xPosition += 3)
+  socket.on('moveRight', (position) => {
+    // console.log('moveRight, ', position)
+    socket.emit('move', position += 3)
     io.emit('playerMoved', players)
   })
 })
