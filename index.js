@@ -54,7 +54,6 @@ io.on('connection', (socket) => {
   socket.on('join', () => {
     console.log('join')
 
-<<<<<<< HEAD
     if (playerId < maxPlayers) {
       let heroId = playerId++
 
