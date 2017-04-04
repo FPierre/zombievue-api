@@ -49,7 +49,6 @@ io.on('connection', (socket) => {
 
       const hero = {
         id: heroId,
-        name: utils.playerName(heroId),
         x: utils.playerPosition(),
         color: utils.playerColor()
       }
