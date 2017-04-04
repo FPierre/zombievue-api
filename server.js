@@ -3,33 +3,27 @@ const io = require('socket.io')(server)
 
 const utils = require('./utils')
 
-const gameWidth = 800
-
 let playerId = 1
 const players = {}
 const maxPlayers = 5
 
 let undeadId = 1
-let undeads = new Map()
+let undeads = {}
 const maxUndeads = 10
 const directions = ['left', 'right']
 
 function loop () {
   // 1 chance in 50
   if (undeadId < maxUndeads && Math.floor(Math.random() * 2) === 0) {
+    const direction = utils.undeadDirection()
+    undeads[undeadId] = { direction: direction, x: utils.undeadPosition(direction), color: '#cc0000' }
     undeadId++
-
-    // 1 chance in 2
-    const direction = directions[Math.floor(Math.random() * 2)]
-    const position = (direction === 'left') ? 0 : gameWidth
-
-    undeads.set(undeadId, { direction: direction, x: position, color: '#cc0000' })
 
     io.emit('undeadCreated', undeads)
   }
 
   if (undeads.length > 0) {
-    undeads = [...undeads].map(undead => {
+    undeads.map(undead => {
       const x = undead.x
       undead.x = undead.direction === 'right' ? (x - 3) : (x + 3)
     })
@@ -41,24 +35,28 @@ function loop () {
 io.on('connection', (socket) => {
   console.log('connection')
 
+  let currentPlayerId;
+
   socket.on('join', () => {
-    console.log('join')
+    currentPlayerId = playerId
+    playerId++
 
-    if (playerId < maxPlayers) {
-      let heroId = playerId++
+    console.log('join with currentPlayerId:', currentPlayerId)
 
+    if (currentPlayerId < maxPlayers) {
       const hero = {
-        id: heroId,
+        id: currentPlayerId,
         x: utils.playerPosition(),
+        health: 100,
         color: utils.playerColor()
       }
 
-      players[heroId] = hero
-
-      // Broadcast to hero only
       socket.emit('heroCreated', { hero, players, undeads })
-      // Broadcast to all players but not hero
+
+      players[currentPlayerId] = hero
       socket.broadcast.emit('playerCreated', players)
+
+      console.log(players)
     }
 
     // setInterval(() => loop(), 300)
@@ -66,11 +64,13 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    // console.log('player quit')
+    console.log('disconnect')
+    console.log('currentPlayerId:', currentPlayerId)
 
-    // players.splice(1, 1)
+    delete players[currentPlayerId]
 
     socket.broadcast.emit('quit', players)
+    console.log(players)
   })
 
   socket.on('moveLeft', ({ id, x }) => {

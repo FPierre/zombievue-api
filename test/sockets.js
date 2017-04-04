@@ -43,11 +43,13 @@ describe('Game server', () => {
   it('Should emit players and undeads to new hero', (done) => {
     const client = io.connect(socketURL, options)
 
-    client.on('heroCreated', ({ players, undeads }) => {
+    client.on('heroCreated', ({ hero, players, undeads }) => {
+      expect(hero).to.be.a('object')
+
       expect(players).to.be.a('object')
-      // expect(players).to.include.keys(['id', 'name', 'x', 'color'])
-      // Can be empty if no undeads already created
-      expect(undeads).to.be.a('array')
+      expect(players).to.be.empty
+
+      expect(undeads).to.be.a('object')
 
       done()
     })
@@ -55,16 +57,16 @@ describe('Game server', () => {
     client.emit('join')
   })
 
-  it('Should broadcast players to players but not hero', (done) => {
-    const client1 = io.connect(socketURL, options)
-    const client2 = io.connect(socketURL, options)
-
-    client2.on('playerCreated', (players) => {
-      expect(players).to.be.a('object')
-
-      done()
-    })
-
-    client1.emit('join')
-  })
+  // it('Should broadcast players to players but not hero', (done) => {
+  //   const client1 = io.connect(socketURL, options)
+  //   const client2 = io.connect(socketURL, options)
+  //
+  //   client2.on('playerCreated', (players) => {
+  //     // expect(players).to.be.a('object')
+  //
+  //     done()
+  //   })
+  //
+  //   client1.emit('join')
+  // })
 })
