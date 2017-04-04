@@ -1,6 +1,4 @@
-const express = require('express')
-const app = express()
-const server = require('http').createServer(app)
+const server = require('http').createServer()
 const io = require('socket.io')(server)
 
 const utils = require('./utils')
