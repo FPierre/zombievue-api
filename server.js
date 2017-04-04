@@ -3,43 +3,35 @@ const io = require('socket.io')(server)
 
 const utils = require('./utils')
 
+const gameWidth = 800
+
 let playerId = 1
-const maxPlayers = 5
-const maxUndeads = 10
-
 const players = {}
-let undeads = []
+const maxPlayers = 5
 
+let undeadId = 1
+let undeads = new Map()
+const maxUndeads = 10
 const directions = ['left', 'right']
 
 function loop () {
-  if (undeads.length <= maxUndeads) {
-    // 1 chance in 50
-    if (Math.floor(Math.random() * 2) === 0) {
-      // 1 chance in 2
-      const direction = directions[Math.floor(Math.random() * 2)]
-      const position = direction === 'left' ? 0 : 800
+  // 1 chance in 50
+  if (undeadId < maxUndeads && Math.floor(Math.random() * 2) === 0) {
+    undeadId++
 
-      undeads.push({ direction: direction, x: position, color: '#cc0000' })
+    // 1 chance in 2
+    const direction = directions[Math.floor(Math.random() * 2)]
+    const position = (direction === 'left') ? 0 : gameWidth
 
-      console.log('undeadCreated ', undeads)
+    undeads.set(undeadId, { direction: direction, x: position, color: '#cc0000' })
 
-      io.emit('undeadCreated', undeads)
-    }
+    io.emit('undeadCreated', undeads)
   }
 
   if (undeads.length > 0) {
-    undeads = undeads.map((undead) => {
+    undeads = [...undeads].map(undead => {
       const x = undead.x
-      let newPosition = x + 3
-
-      if (undead.direction === 'right') {
-        newPosition = x - 3
-      }
-
-      undead.x = newPosition
-
-      return undead
+      undead.x = undead.direction === 'right' ? (x - 3) : (x + 3)
     })
 
     io.emit('undeadsMoved', undeads)
