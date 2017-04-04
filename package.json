@@ -1,11 +1,11 @@
 {
   "name": "zombievue-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "author": "pflauder@gmail.com",
   "license": "MIT",
   "scripts": {
-    "dev": "node index.js",
+    "dev": "node server.js",
     "test": "mocha"
   },
   "dependencies": {
