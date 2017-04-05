@@ -4,6 +4,7 @@ const io = require('socket.io')(server)
 const utils = require('./utils')
 
 let playerId = 1
+let currentPlayerId = null
 const players = {}
 const maxPlayers = 5
 
@@ -35,21 +36,29 @@ io.on('connection', (socket) => {
   console.log('connection')
 
   socket.on('join', () => {
-    if (playerId < maxPlayers) {
-      players[playerId] = {
-        id: playerId,
-        x: utils.playerPosition(),
-        health: 100,
-        color: utils.playerColor()
-      }
+    console.log('join, Object.keys(players).length:', Object.keys(players).length)
 
-      socket.emit('heroCreated', { id: playerId, undeads })
-      io.emit('playerCreated', players)
+    if (Object.keys(players).length >= maxPlayers) {
+      socket.emit('maxPlayers', maxPlayers)
 
-      playerId++
-
-      console.log(players)
+      return
     }
+
+    players[playerId] = {
+      id: playerId,
+      x: utils.playerPosition(),
+      health: 100,
+      color: utils.playerColor()
+    }
+
+    currentPlayerId = playerId
+
+    socket.emit('heroCreated', { id: playerId, undeads })
+    io.emit('playerCreated', players)
+
+    playerId++
+
+    console.log(players)
 
     // setInterval(() => loop(), 300)
     // setInterval(() => loop(), 2000)
@@ -58,9 +67,22 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('disconnect')
 
-    // delete players[playerId]
+    console.log('currentPlayerId:', currentPlayerId)
 
-    socket.broadcast.emit('quit', players)
+    // if (players.length <= maxPlayers) {
+    if (currentPlayerId !== null) {
+      delete players[currentPlayerId]
+
+      currentPlayerId = null
+
+      // Avoid disconnection first scenario
+      if (Object.keys(players).length > 0) {
+        playerId--
+      }
+
+      socket.broadcast.emit('quit', players)
+    }
+
     console.log(players)
   })
 
