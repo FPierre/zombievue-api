@@ -10,7 +10,6 @@ const maxPlayers = 5
 let undeadId = 1
 let undeads = {}
 const maxUndeads = 10
-const directions = ['left', 'right']
 
 function loop () {
   // 1 chance in 50
@@ -35,26 +34,19 @@ function loop () {
 io.on('connection', (socket) => {
   console.log('connection')
 
-  let currentPlayerId;
-
   socket.on('join', () => {
-    currentPlayerId = playerId
-    playerId++
-
-    console.log('join with currentPlayerId:', currentPlayerId)
-
-    if (currentPlayerId < maxPlayers) {
-      const hero = {
-        id: currentPlayerId,
+    if (playerId < maxPlayers) {
+      players[playerId] = {
+        id: playerId,
         x: utils.playerPosition(),
         health: 100,
         color: utils.playerColor()
       }
 
-      socket.emit('heroCreated', { hero, players, undeads })
+      socket.emit('heroCreated', { id: playerId, undeads })
+      io.emit('playerCreated', players)
 
-      players[currentPlayerId] = hero
-      socket.broadcast.emit('playerCreated', players)
+      playerId++
 
       console.log(players)
     }
@@ -65,27 +57,23 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('disconnect')
-    console.log('currentPlayerId:', currentPlayerId)
 
-    delete players[currentPlayerId]
+    // delete players[playerId]
 
     socket.broadcast.emit('quit', players)
     console.log(players)
   })
 
-  socket.on('moveLeft', ({ id, x }) => {
-    const hero = players[id]
-    hero.x -= 3
+  socket.on('moveLeft', (id) => {
+    console.log('moveLeft, id:', id)
+    players[id].x -= 3
 
-    socket.emit('moved', hero.x)
     io.emit('playerMoved', players)
   })
 
-  socket.on('moveRight', ({ id, x }) => {
-    const hero = players[id]
-    hero.x += 3
+  socket.on('moveRight', (id) => {
+    players[id].x += 3
 
-    socket.emit('moved', hero.x)
     io.emit('playerMoved', players)
   })
 })

@@ -1,4 +1,5 @@
 const gameWidth = 800
+const directions = ['left', 'right']
 
 module.exports = {
   // Return random position between the game size (0px to 800px)
