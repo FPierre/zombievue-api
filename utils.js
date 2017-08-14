@@ -9,12 +9,5 @@ module.exports = {
   // Return random hexadecimal color string for player color
   playerColor: () => {
     return '#' + Math.floor(Math.random() * 16777215).toString(16)
-  },
-  undeadDirection: () => {
-    // 1 chance in 2
-    return directions[Math.floor(Math.random() * 2)]
-  },
-  undeadPosition: (direction) => {
-    return (direction === 'left') ? 0 : gameWidth
   }
 }
