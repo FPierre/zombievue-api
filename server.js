@@ -29,7 +29,6 @@ io.on('connection', socket => {
     const playerId = game.createPlayer()
 
     if (playerId) {
-      socket.emit('joined')
       socket.emit('heroCreated', {
         id: playerId,
         players: game.players,
@@ -40,7 +39,7 @@ io.on('connection', socket => {
       // socket.emit('maxPlayers', maxPlayers)
     }
 
-    setInterval(loop, 2000)
+    // setInterval(loop, 2000)
   })
 
   socket.on('disconnect', () => {
@@ -60,22 +59,22 @@ io.on('connection', socket => {
     */
   })
 
-  socket.on('moveLeft', id => {
+  socket.on('left', id => {
     // console.log('moveLeft, id:', id)
 
     const hero = game.findPlayer(id)
 
-    hero.moveLeft()
+    hero.left()
 
     io.emit('playerMoved', game.players)
   })
 
-  socket.on('moveRight', id => {
+  socket.on('right', id => {
     // console.log('moveRight, id:', id)
 
     const hero = game.findPlayer(id)
 
-    hero.moveRight()
+    hero.right()
 
     io.emit('playerMoved', game.players)
   })
@@ -88,6 +87,16 @@ io.on('connection', socket => {
     hero.idle()
 
     io.emit('playerMoved', game.players)
+  })
+
+  socket.on('attack', id => {
+    // console.log('attack, id:', id)
+
+    const hero = game.findPlayer(id)
+
+    hero.attack()
+
+    // io.emit('playerMoved', game.players)
   })
 })
 

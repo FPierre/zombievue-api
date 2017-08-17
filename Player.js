@@ -7,13 +7,13 @@ module.exports = class Player extends Character {
     super(id, 'left', x, 'idle')
   }
 
-  moveLeft () {
+  left () {
     this.direction = 'left'
     this.x -= 3
     this.state = 'walk'
   }
 
-  moveRight () {
+  right () {
     this.direction = 'right'
     this.x += 3
     this.state = 'walk'
@@ -21,6 +21,10 @@ module.exports = class Player extends Character {
 
   idle () {
     this.state = 'idle'
+  }
+
+  attack () {
+    this.state = 'attack'
   }
 
   static position () {
