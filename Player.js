@@ -1,9 +1,25 @@
-class Player extend Character {
-  constructor () {
+const Character = require('./Character')
 
+module.exports = class Player extends Character {
+  constructor (id) {
+    const x = Player.position()
+
+    super(id, 'left', x)
   }
 
-  static max () {
-    return 5
+  moveLeft () {
+    this.direction = 'left'
+    this.x -= 3
+  }
+
+  moveRight () {
+    this.direction = 'right'
+    this.x += 3
+  }
+
+  static position () {
+    const gameWidth = 800
+
+    return gameWidth / 2
   }
 }
