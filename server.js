@@ -79,6 +79,16 @@ io.on('connection', socket => {
 
     io.emit('playerMoved', game.players)
   })
+
+  socket.on('idle', id => {
+    // console.log('idle, id:', id)
+
+    const hero = game.findPlayer(id)
+
+    hero.idle()
+
+    io.emit('playerMoved', game.players)
+  })
 })
 
 server.listen(1337)
