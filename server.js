@@ -90,9 +90,13 @@ io.on('connection', socket => {
   console.log('connection')
 
   socket.on('join', () => {
+    console.log('join')
+
     if (!playerCreationPossible()) {
       socket.emit('maxPlayers', maxPlayers)
     } else {
+      socket.emit('joined')
+
       createPlayer()
 
       socket.emit('heroCreated', { id: playerId, undeads })
