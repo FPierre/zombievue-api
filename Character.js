@@ -3,7 +3,7 @@ module.exports = class Character {
     this.id = id
     this.direction = direction
     this.x = x
+    this.state = state
     this.health = 100
-    this.state = null
   }
 }

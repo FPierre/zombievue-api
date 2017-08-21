@@ -14,8 +14,6 @@ module.exports = class Game {
   }
 
   findPlayer (id) {
-    console.log(this.players)
-
     return this.players.find(p => p.id === id)
   }
 
@@ -43,7 +41,6 @@ module.exports = class Game {
 
     this.players = this.players.filter(p => p.id !== playerId)
     // delete this.players.find(p => p.id === playerId)
-    // currentPlayerId = null
   }
 
   canCreateUndead () {

@@ -26,11 +26,11 @@ io.on('connection', socket => {
   socket.on('join', () => {
     console.log('join')
 
-    const playerId = game.createPlayer()
+    heroId = game.createPlayer()
 
-    if (playerId) {
+    if (heroId) {
       socket.emit('heroCreated', {
-        id: playerId,
+        id: heroId,
         players: game.players,
         undeads: game.undeads
       })
@@ -39,24 +39,25 @@ io.on('connection', socket => {
       // socket.emit('maxPlayers', maxPlayers)
     }
 
-    // setInterval(loop, 2000)
+    setInterval(loop, 2000)
   })
 
   socket.on('disconnect', () => {
     console.log('disconnect')
 
-    /*
     if (heroConnected()) {
-      deletePlayer()
+      game.deletePlayer(heroId)
+      heroId = null
 
       // Avoid disconnection first scenario
-      if (players.length) {
+      /*
+      if (game.players.length) {
         playerId--
       }
+      */
 
-      socket.broadcast.emit('quit', players)
+      socket.broadcast.emit('quit', game.players)
     }
-    */
   })
 
   socket.on('left', id => {
@@ -64,9 +65,10 @@ io.on('connection', socket => {
 
     const hero = game.findPlayer(id)
 
-    hero.left()
-
-    io.emit('playerMoved', game.players)
+    if (hero) {
+      hero.left()
+      io.emit('playerMoved', game.players)
+    }
   })
 
   socket.on('right', id => {
@@ -74,9 +76,10 @@ io.on('connection', socket => {
 
     const hero = game.findPlayer(id)
 
-    hero.right()
-
-    io.emit('playerMoved', game.players)
+    if (hero) {
+      hero.right()
+      io.emit('playerMoved', game.players)
+    }
   })
 
   socket.on('idle', id => {
@@ -84,9 +87,10 @@ io.on('connection', socket => {
 
     const hero = game.findPlayer(id)
 
-    hero.idle()
-
-    io.emit('playerMoved', game.players)
+    if (hero) {
+      hero.idle()
+      io.emit('playerMoved', game.players)
+    }
   })
 
   socket.on('attack', id => {
@@ -94,9 +98,10 @@ io.on('connection', socket => {
 
     const hero = game.findPlayer(id)
 
-    hero.attack()
-
-    // io.emit('playerMoved', game.players)
+    if (hero) {
+      hero.attack()
+      io.emit('playerMoved', game.players)
+    }
   })
 })
 
