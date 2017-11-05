@@ -2,7 +2,6 @@ const server = require('http').createServer()
 const io = require('socket.io')(server)
 
 const Undead = require('./Undead')
-
 const utils = require('./utils')
 
 let playerId = 1
@@ -14,15 +13,15 @@ let undeadId = 1
 let undeads = []
 const maxUndeads = 10
 
-function oneInFifty () {
+const oneInFifty = () => {
   return Math.floor(Math.random() * 2) === 0
 }
 
-function playerCreationPossible () {
+const playerCreationPossible = () => {
   return Object.keys(players).length >= maxPlayers
 }
 
-function createPlayer () {
+const createPlayer = () => {
   console.log('createPlayer')
 
   players[playerId] = {
@@ -36,33 +35,33 @@ function createPlayer () {
   playerId++
 }
 
-function deletePlayer () {
+const deletePlayer = () => {
   console.log('deletePlayer')
 
   delete players[currentPlayerId]
   currentPlayerId = null
 }
 
-function heroConnected () {
+const heroConnected = () => {
   return currentPlayerId !== null
 }
 
-function existingUndeads () {
+const existingUndeads = () => {
   return undeads.length > 0
 }
 
-function undeadCreationPossible () {
+const undeadCreationPossible = () => {
   return undeads.length < 1 && oneInFifty()
 }
 
-function createUndead () {
+const createUndead = () => {
   console.log('createUndead')
 
   undeads.push(new Undead(undeadId))
   undeadId++
 }
 
-function moveUndeads () {
+const moveUndeads = () => {
   // console.log('moveUndeads')
 
   undeads.map(undead => {
@@ -70,7 +69,7 @@ function moveUndeads () {
   })
 }
 
-function loop () {
+const loop = () => {
   // console.log('loop')
 
   if (undeadCreationPossible()) {
