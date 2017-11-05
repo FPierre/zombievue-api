@@ -3,6 +3,7 @@ const io = require('socket.io')(server)
 
 const Undead = require('./Undead')
 const utils = require('./utils')
+const { info, warning } = require('./logger')
 
 let playerId = 1
 let currentPlayerId = null
@@ -17,7 +18,7 @@ const oneInFifty = () => {
   return Math.floor(Math.random() * 2) === 0
 }
 
-const playerCreationPossible = () => {
+const canCreatePlayer = () => {
   return Object.keys(players).length >= maxPlayers
 }
 
@@ -50,7 +51,7 @@ const existingUndeads = () => {
   return undeads.length > 0
 }
 
-const undeadCreationPossible = () => {
+const canCreateUndead = () => {
   return undeads.length < 1 && oneInFifty()
 }
 
@@ -72,7 +73,7 @@ const moveUndeads = () => {
 const loop = () => {
   // console.log('loop')
 
-  if (undeadCreationPossible()) {
+  if (canCreateUndead()) {
     createUndead()
 
     io.emit('undeadCreated', undeads)
@@ -91,7 +92,7 @@ io.on('connection', socket => {
   socket.on('join', () => {
     console.log('join')
 
-    if (!playerCreationPossible()) {
+    if (!canCreatePlayer()) {
       socket.emit('maxPlayers', maxPlayers)
     } else {
       socket.emit('joined')
@@ -136,4 +137,4 @@ io.on('connection', socket => {
   */
 })
 
-server.listen(1337)
+server.listen(1337, info('Start to listen on localhost:1337'))

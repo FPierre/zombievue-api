@@ -5,10 +5,11 @@
   "author": "pflauder@gmail.com",
   "license": "MIT",
   "scripts": {
-    "dev": "node index.js",
+    "dev": "node src/server.js",
     "test": "ava test/unit"
   },
   "dependencies": {
+    "chalk": "^2.3.0",
     "socket.io": "^1.7.3"
   },
   "devDependencies": {
