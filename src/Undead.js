@@ -5,11 +5,7 @@ module.exports = class Undead extends Character {
     const direction = Undead.direction()
     const x = Undead.position(direction)
 
-    super(id, direction, x, '#cc0000')
-  }
-
-  static max () {
-    return 10
+    super(id, direction, x, 'walk')
   }
 
   static directions () {
