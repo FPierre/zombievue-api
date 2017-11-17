@@ -1,5 +1,5 @@
 const Undead = require('./Undead')
-const utils = require('./utils')
+const { playerColor, playerPosition, } = require('./utils')
 
 let playerId = 1
 let currentPlayerId = null
@@ -22,18 +22,17 @@ const existingUndeads = () => {
 }
 
 module.exports = {
-  players: players,
-  undeads: undeads,
-  canCreatePlayer: () => {
-    return players.length < maxPlayers
-  },
+  players,
+  undeads,
+  maxPlayers,
+  canCreatePlayer: () => players.length < maxPlayers,
 
   createPlayer: () => {
     players.push({
       id: playerId,
-      x: utils.playerPosition(),
+      x: playerPosition(),
       health: 100,
-      color: utils.playerColor()
+      color: playerColor()
     })
 
     currentPlayerId = playerId
@@ -49,9 +48,7 @@ module.exports = {
     currentPlayerId = null
   },
 
-  heroConnected: () => {
-    return currentPlayerId !== null
-  },
+  heroConnected: () => currentPlayerId !== null,
 
   createUndead: () => {
     if (canCreateUndead()) {
