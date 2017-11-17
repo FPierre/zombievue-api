@@ -5,15 +5,22 @@
   "author": "pflauder@gmail.com",
   "license": "MIT",
   "scripts": {
-    "dev": "node src/server.js",
-    "test": "ava test/unit"
+    "dev": "NODE_ENV=development node index.js",
+    "e2e": "NODE_ENV=test ava test/e2e",
+    "unit": "NODE_ENV=test ava test/unit"
   },
   "dependencies": {
     "chalk": "^2.3.0",
+    "dotenv": "^4.0.0",
     "websocket": "^1.0.25"
   },
   "devDependencies": {
     "ava": "^0.23.0",
     "socket.io-client": "^1.7.3"
+  },
+  "ava": {
+    "require": [
+      "./test/helpers/setup.js"
+    ]
   }
 }

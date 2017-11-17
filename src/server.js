@@ -1,72 +1,129 @@
-const server = require('http').createServer()
-const io = require('socket.io')(server)
+var WebSocketServer = require('websocket').server;
+var http = require('http');
 
-const { info, warning } = require('./logger')
-const { players, undeads } = require('./game')
+module.exports = {
+  start: () => {
+var server = http.createServer(function(request, response) {
+    console.log((new Date()) + ' Received request for ' + request.url);
+    response.writeHead(404);
+    response.end();
+});
+server.listen(process.env.PORT, function() {
+    console.log((new Date()) + ' Server is listening on port ' + process.env.PORT);
+});
 
-const loop = () => {
-  // console.log('loop')
+wsServer = new WebSocketServer({
+    httpServer: server,
+    // You should not use autoAcceptConnections for production
+    // applications, as it defeats all standard cross-origin protection
+    // facilities built into the protocol and the browser.  You should
+    // *always* verify the connection's origin and decide whether or not
+    // to accept it.
+    autoAcceptConnections: false
+});
 
-  info('Create undead')
-  createUndead()
-  io.emit('undeadCreated', undeads)
-
-  info('Move undead')
-  moveUndeads()
-  io.emit('undeadsMoved', undeads)
+function originIsAllowed(origin) {
+  // put logic here to detect whether the specified origin is allowed.
+  return true;
 }
 
-io.on('connection', socket => {
-  console.log('connection')
-
-  socket.on('join', () => {
-    console.log('join')
-
-    if (canCreatePlayer()) {
-      socket.emit('joined')
-
-      info('Create player')
-      const playerId = createPlayer()
-
-      socket.emit('heroCreated', { id: playerId, undeads })
-      io.emit('playerCreated', players)
-    } else {
-      socket.emit('maxPlayers', maxPlayers)
+wsServer.on('request', function(request) {
+    if (!originIsAllowed(request.origin)) {
+      // Make sure we only accept requests from an allowed origin
+      request.reject();
+      console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+      return;
     }
 
-    setInterval(loop, 2000)
-  })
+    var connection = request.accept('echo-protocol', request.origin);
+    console.log((new Date()) + ' Connection accepted.');
+    connection.on('message', function(message) {
+        if (message.type === 'utf8') {
+            console.log('Received Message: ' + message.utf8Data);
+            connection.sendUTF(message.utf8Data);
+        }
+        else if (message.type === 'binary') {
+            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+            connection.sendBytes(message.binaryData);
+        }
+    });
+    connection.on('close', function(reasonCode, description) {
+        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+    });
+});
+}
+}
 
-  socket.on('disconnect', () => {
-    warning('disconnect')
 
-    if (heroConnected()) {
-      info('Delete player')
-      deletePlayer()
 
-      // Avoid disconnection first scenario
-      if (players.length) {
-        playerId--
-      }
+// const server = require('http').createServer()
+// const io = require('socket.io')(server)
 
-      socket.broadcast.emit('quit', players)
-    }
-  })
-
-  /*
-  socket.on('moveLeft', id => {
-    console.log('moveLeft, id:', id)
-    players[id].x -= 3
-
-    io.emit('playerMoved', players)
-  })
-
-  socket.on('moveRight', id => {
-    players[id].x += 3
-
-    io.emit('playerMoved', players)
-  })
-  */
-})
-
-server.listen(1337, info('Start to listen on localhost:1337'))
+// const { players, undeads } = require('./game')
+//
+// const loop = () => {
+//   // console.log('loop')
+//
+//   info('Create undead')
+//   createUndead()
+//   io.emit('undeadCreated', undeads)
+//
+//   info('Move undead')
+//   moveUndeads()
+//   io.emit('undeadsMoved', undeads)
+// }
+//
+// io.on('connection', socket => {
+//   console.log('connection')
+//
+//   socket.on('join', () => {
+//     console.log('join')
+//
+//     if (canCreatePlayer()) {
+//       socket.emit('joined')
+//
+//       info('Create player')
+//       const playerId = createPlayer()
+//
+//       socket.emit('heroCreated', { id: playerId, undeads })
+//       io.emit('playerCreated', players)
+//     } else {
+//       socket.emit('maxPlayers', maxPlayers)
+//     }
+//
+//     setInterval(loop, 2000)
+//   })
+//
+//   socket.on('disconnect', () => {
+//     warning('disconnect')
+//
+//     if (heroConnected()) {
+//       info('Delete player')
+//       deletePlayer()
+//
+//       // Avoid disconnection first scenario
+//       if (players.length) {
+//         playerId--
+//       }
+//
+//       socket.broadcast.emit('quit', players)
+//     }
+//   })
+//
+//   /*
+//   socket.on('moveLeft', id => {
+//     console.log('moveLeft, id:', id)
+//     players[id].x -= 3
+//
+//     io.emit('playerMoved', players)
+//   })
+//
+//   socket.on('moveRight', id => {
+//     players[id].x += 3
+//
+//     io.emit('playerMoved', players)
+//   })
+//   */
+// })
+//
+// server.listen(1337, info('Start to listen on localhost:1337'))
