@@ -2,31 +2,26 @@ const http = require('http')
 const WebSocketServer = require('websocket').server
 
 const { info, warning } = require('./logger')
-const { players, createPlayer, canCreatePlayer, undeads, createUndead, moveUndeads, maxPlayers } = require('./game')
+const { MAX_PLAYERS, players, createPlayer, canCreatePlayer, undeads, createUndead, canCreateUndead, moveUndeads } = require('./game')
 
 const clients = []
 let connection = null
 
+const broadcast = (event, data) => {
+  for (let i = 0; i < clients.length; i++) {
+    clients[i].sendUTF(JSON.stringify({ event, data }))
+  }
+}
+
 const loop = connection => {
   info('Server: loop')
 
-  info('Server: create undead')
-  createUndead()
-
-  // io.emit('undeadCreated', undeads)
-  for (let i = 0; i < clients.length; i++) {
-    clients[i].sendUTF(JSON.stringify({ event: 'undeadCreated', data: { undeads } }))
-    // connection.sendUTF(JSON.stringify(undeads))
+  if (canCreateUndead()) {
+    createUndead()
   }
 
-  info('Server: move undeads')
   moveUndeads()
-
-  // io.emit('undeadsMoved', undeads)
-  for (let i = 0; i < clients.length; i++) {
-    clients[i].sendUTF(JSON.stringify({ event: 'undeadsMoved', data: { undeads } }))
-    // connection.sendUTF(JSON.stringify(undeads))
-  }
+  broadcast('undeadsMoved', { undeads })
 }
 
 const join = () => {
@@ -36,45 +31,41 @@ const join = () => {
     info('Server: create player')
     const playerId = createPlayer()
 
-    // socket.emit('heroCreated', { id: playerId, undeads })
     connection.sendUTF(JSON.stringify({ event: 'heroCreated', data: { id: playerId, players, undeads } }))
-
-    // io.emit('playerCreated', players)
-    for (let i = 0; i < clients.length; i++) {
-      clients[i].sendUTF(JSON.stringify({ event: 'playerCreated', data: { players } }))
-      // connection.sendUTF(JSON.stringify(undeads))
-    }
+    broadcast('playerCreated', { players })
   } else {
-    connection.sendUTF(JSON.stringify({ event: 'maxPlayers', data: { maxPlayers } }))
-    // socket.emit('maxPlayers', maxPlayers)
+    connection.sendUTF(JSON.stringify({ event: 'maxPlayers', data: { MAX_PLAYERS } }))
   }
 }
 
 const moveLeft = ({ id }) => {
-  info('Server: moveLeft', id)
+  // info('Server: moveLeft', id)
 
   const player = players.find(p => p.id === id)
 
   if (player) {
-    player.x -= 3
-
-    for (let i = 0; i < clients.length; i++) {
-      clients[i].sendUTF(JSON.stringify({ event: 'playerMoved', data: { players } }))
-    }
+    player.left()
+    broadcast('playerMoved', { players })
   }
 }
 
 const moveRight = ({ id }) => {
-  info('Server: moveRight', id)
+  // info('Server: moveRight', id)
 
   const player = players.find(p => p.id === id)
 
   if (player) {
-    player.x += 3
+    player.right()
+    broadcast('playerMoved', { players })
+  }
+}
 
-    for (let i = 0; i < clients.length; i++) {
-      clients[i].sendUTF(JSON.stringify({ event: 'playerMoved', data: { players } }))
-    }
+const idle = ({ id }) => {
+  const player = players.find(p => p.id === id)
+
+  if (player) {
+    player.idle()
+    broadcast('playerMoved', { players })
   }
 }
 
@@ -122,14 +113,12 @@ module.exports = {
 
       info('Server: connection accepted')
 
-      // setInterval(() => {
-      //   loop(connection)
-      // }, 1000)
+      setInterval(() => loop(connection), 1000)
 
       connection.on('message', message => {
         if (message.type === 'utf8') {
           const { event, data } = JSON.parse(message.utf8Data)
-          info(`Server: received message ${event}`)
+          // info(`Server: received message ${event}`)
 
           if (event === 'join') {
             join()
@@ -137,6 +126,8 @@ module.exports = {
             moveLeft(data)
           } else if (event === 'moveRight') {
             moveRight(data)
+          } else if (event === 'idle') {
+            idle(data)
           }
 
           // connection.sendUTF(message.utf8Data)
@@ -155,23 +146,6 @@ module.exports = {
 
 
 
-// const server = require('http').createServer()
-// const io = require('socket.io')(server)
-
-// const { players, undeads } = require('./game')
-//
-// const loop = () => {
-//   // console.log('loop')
-//
-//   info('Create undead')
-//   createUndead()
-//   io.emit('undeadCreated', undeads)
-//
-//   info('Move undead')
-//   moveUndeads()
-//   io.emit('undeadsMoved', undeads)
-// }
-//
 // io.on('connection', socket => {
 //   console.log('connection')
 //
@@ -208,21 +182,4 @@ module.exports = {
 //       socket.broadcast.emit('quit', players)
 //     }
 //   })
-//
-//   /*
-//   socket.on('moveLeft', id => {
-//     console.log('moveLeft, id:', id)
-//     players[id].x -= 3
-//
-//     io.emit('playerMoved', players)
-//   })
-//
-//   socket.on('moveRight', id => {
-//     players[id].x += 3
-//
-//     io.emit('playerMoved', players)
-//   })
-//   */
 // })
-//
-// server.listen(1337, info('Start to listen on localhost:1337'))

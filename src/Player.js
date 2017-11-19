@@ -2,19 +2,19 @@ const Character = require('./Character')
 
 module.exports = class Player extends Character {
   constructor (id) {
-    super(id, 'left', Player.position(), 'idle')
+    super(id, 'left', 'idle', Player.position())
   }
 
   left () {
     this.direction = 'left'
-    this.x -= 3
     this.state = 'walk'
+    this.x -= 3
   }
 
   right () {
     this.direction = 'right'
-    this.x += 3
     this.state = 'walk'
+    this.x += 3
   }
 
   idle () {

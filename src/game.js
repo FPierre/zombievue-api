@@ -1,5 +1,6 @@
+const Player = require('./Player')
 const Undead = require('./Undead')
-const { playerColor, playerPosition, } = require('./utils')
+const { playerColor, playerPosition } = require('./utils')
 
 let playerId = 1
 let currentPlayerId = null
@@ -8,33 +9,19 @@ const maxPlayers = 5
 
 let undeadId = 1
 let undeads = []
-const maxUndeads = 10
+const MAX_UNDEADS = 2
+const MAX_PLAYERS = 1
 
-const canCreateUndead = () => {
-  // one in fifty
-  const random = Math.floor(Math.random() * 2)
-
-  return undeads.length < 1 && random === 0
-}
-
-const existingUndeads = () => {
-  return undeads.length > 0
-}
+const existingUndeads = () => undeads.length > 0
 
 module.exports = {
   players,
   undeads,
-  maxPlayers,
-  canCreatePlayer: () => players.length < maxPlayers,
+  MAX_PLAYERS,
+  canCreatePlayer: () => players.length < MAX_PLAYERS,
 
   createPlayer: () => {
-    players.push({
-      id: playerId,
-      x: playerPosition(),
-      health: 100,
-      color: playerColor()
-    })
-
+    players.push(new Player(playerId))
     currentPlayerId = playerId
     playerId++
 
@@ -50,11 +37,16 @@ module.exports = {
 
   heroConnected: () => currentPlayerId !== null,
 
+  canCreateUndead: () => {
+    // one in fifty
+    const random = Math.floor(Math.random() * 2)
+
+    return undeads.length < MAX_UNDEADS && random === 0
+  },
+
   createUndead: () => {
-    if (canCreateUndead()) {
-      undeads.push(new Undead(undeadId))
-      undeadId++
-    }
+    undeads.push(new Undead(undeadId))
+    undeadId++
   },
 
   moveUndeads: () => {
