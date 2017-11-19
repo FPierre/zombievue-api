@@ -1,9 +1,9 @@
 module.exports = class Character {
-  constructor (id, direction, x, state) {
+  constructor (id, direction, state, x) {
     this.id = id
     this.direction = direction
-    this.x = x
-    this.state = state
     this.health = 100
+    this.state = state
+    this.x = x
   }
 }

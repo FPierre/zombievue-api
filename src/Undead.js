@@ -5,16 +5,12 @@ module.exports = class Undead extends Character {
     const direction = Undead.direction()
     const x = Undead.position(direction)
 
-    super(id, direction, x, 'walk')
-  }
-
-  static directions () {
-    return ['left', 'right']
+    super(id, direction, 'walk', x)
   }
 
   static direction () {
-    // 1 chance in 2
-    return Undead.directions()[Math.floor(Math.random() * 2)]
+    // 1 chance of 2
+    return ['left', 'right'][Math.floor(Math.random() * 2)]
   }
 
   static position (direction) {
