@@ -113,7 +113,9 @@ module.exports = {
 
       info('Server: connection accepted')
 
-      setInterval(() => loop(connection), 1000)
+      if (players.length) {
+        setInterval(() => loop(connection), 1000)
+      }
 
       connection.on('message', message => {
         if (message.type === 'utf8') {
