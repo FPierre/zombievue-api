@@ -2,10 +2,17 @@ const http = require('http')
 const WebSocketServer = require('websocket').server
 
 const { info, warning } = require('./logger')
-const { MAX_PLAYERS, players, createPlayer, canCreatePlayer, undeads, createUndead, canCreateUndead, moveUndeads } = require('./game')
+const { heroConnected, players, createPlayer, canCreatePlayer, undeads, createUndead, canCreateUndead, moveUndeads } = require('./game')
 
 const clients = []
 let connection = null
+
+const originIsAllowed = origin => {
+  // put logic here to detect whether the specified origin is allowed.
+  return true
+}
+
+const emit = (event, data) => connection.sendUTF(JSON.stringify({ event, data }))
 
 const broadcast = (event, data) => {
   for (let i = 0; i < clients.length; i++) {
@@ -26,15 +33,15 @@ const loop = connection => {
 
 const join = () => {
   if (canCreatePlayer()) {
-    connection.sendUTF(JSON.stringify({ event: 'joined' }))
+    emit('joined')
 
     info('Server: create player')
-    const playerId = createPlayer()
+    const id = createPlayer()
 
-    connection.sendUTF(JSON.stringify({ event: 'heroCreated', data: { id: playerId, players, undeads } }))
+    emit('heroCreated', { id, players, undeads })
     broadcast('playerCreated', { players })
   } else {
-    connection.sendUTF(JSON.stringify({ event: 'maxPlayers', data: { MAX_PLAYERS } }))
+    emit('maxPlayers')
   }
 }
 
@@ -90,11 +97,6 @@ module.exports = {
       autoAcceptConnections: false
     })
 
-    const originIsAllowed = origin => {
-      // put logic here to detect whether the specified origin is allowed.
-      return true
-    }
-
     wsServer.on('request', request => {
       const { origin } = request
 
@@ -122,66 +124,40 @@ module.exports = {
           const { event, data } = JSON.parse(message.utf8Data)
           // info(`Server: received message ${event}`)
 
-          if (event === 'join') {
-            join()
-          } else if (event === 'moveLeft') {
-            moveLeft(data)
-          } else if (event === 'moveRight') {
-            moveRight(data)
-          } else if (event === 'idle') {
-            idle(data)
+          // OPTIMIZE: call directly in a Object of events? eg: `events[event]`
+          switch(event) {
+            case 'join':
+              join()
+              break
+            case 'moveLeft':
+              moveLeft(data)
+              break
+            case 'moveLeft':
+              moveRight(data)
+              break
+            case 'idle':
+              idle(data)
+              break
           }
-
-          // connection.sendUTF(message.utf8Data)
         }
       })
 
       connection.on('close', (reasonCode, description) => {
-        // if (userName !== false && userColor !== false) {
-          info(`Server: peer ${connection.remoteAddress} disconnected`)
-          clients.splice(index, 1)
-        // }
+        info(`Server: peer ${connection.remoteAddress} disconnected`)
+
+        // clients.splice(index, 1)
+
+        if (heroConnected()) {
+          deletePlayer()
+
+          // Avoid disconnection first scenario
+          // if (game.players.length) {
+          //   playerId--
+          // }
+
+          broadcast('quit', { players })
+        }
       })
     })
   }
 }
-
-
-
-// io.on('connection', socket => {
-//   console.log('connection')
-//
-//   socket.on('join', () => {
-//     console.log('join')
-//
-//     if (canCreatePlayer()) {
-//       socket.emit('joined')
-//
-//       info('Create player')
-//       const playerId = createPlayer()
-//
-//       socket.emit('heroCreated', { id: playerId, undeads })
-//       io.emit('playerCreated', players)
-//     } else {
-//       socket.emit('players', maxPlayers)
-//     }
-//
-//     setInterval(loop, 2000)
-//   })
-//
-//   socket.on('disconnect', () => {
-//     warning('disconnect')
-//
-//     if (heroConnected()) {
-//       info('Delete player')
-//       deletePlayer()
-//
-//       // Avoid disconnection first scenario
-//       if (players.length) {
-//         playerId--
-//       }
-//
-//       socket.broadcast.emit('quit', players)
-//     }
-//   })
-// })
