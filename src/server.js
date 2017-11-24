@@ -31,12 +31,13 @@ const loop = connection => {
   broadcast('undeadsMoved', { undeads })
 }
 
-const join = () => {
+const join = ({ playerType }) => {
+  console.log(playerType)
   if (canCreatePlayer()) {
     emit('joined')
 
     info('Server: create player')
-    const id = createPlayer()
+    const id = createPlayer(playerType)
 
     emit('heroCreated', { id, players, undeads })
     broadcast('playerCreated', { players })
@@ -136,7 +137,7 @@ module.exports = {
           // OPTIMIZE: call directly in a Object of events? eg: `events[event]`
           switch(event) {
             case 'join':
-              join()
+              join(data)
               break
             case 'moveLeft':
               moveLeft(data)

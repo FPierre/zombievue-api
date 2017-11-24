@@ -19,8 +19,8 @@ module.exports = {
   MAX_PLAYERS,
   canCreatePlayer: () => players.length < MAX_PLAYERS,
 
-  createPlayer: () => {
-    players.push(new Player(playerId))
+  createPlayer: type => {
+    players.push(new Player(playerId, type))
     currentPlayerId = playerId
     playerId++
 

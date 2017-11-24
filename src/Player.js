@@ -1,8 +1,8 @@
 const Character = require('./Character')
 
 module.exports = class Player extends Character {
-  constructor (id) {
-    super(id, 'left', 'idle', Player.position())
+  constructor (id, type) {
+    super(id, 'left', 'idle', type, Player.position())
   }
 
   left () {

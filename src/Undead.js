@@ -5,7 +5,7 @@ module.exports = class Undead extends Character {
     const direction = Undead.direction()
     const x = Undead.position(direction)
 
-    super(id, direction, 'walk', x)
+    super(id, direction, 'walk', 'undead', x)
   }
 
   static direction () {
