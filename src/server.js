@@ -2,7 +2,7 @@ const http = require('http')
 const WebSocketServer = require('websocket').server
 
 const { info, warning } = require('./logger')
-const { heroConnected, players, createPlayer, canCreatePlayer, undeads, createUndead, canCreateUndead, moveUndeads } = require('./game')
+const { heroConnected, players, createPlayer, canCreatePlayer, undeads, createUndead, canCreateUndead, moveUndeads, deletePlayer } = require('./game')
 
 const clients = []
 let connection = null
@@ -76,6 +76,15 @@ const idle = ({ id }) => {
   }
 }
 
+const attack = ({ id }) => {
+  const player = players.find(p => p.id === id)
+
+  if (player) {
+    player.attack()
+    broadcast('playerMoved', { players })
+  }
+}
+
 module.exports = {
   start: () => {
     const httpServer = http.createServer((request, response) => {
@@ -132,11 +141,14 @@ module.exports = {
             case 'moveLeft':
               moveLeft(data)
               break
-            case 'moveLeft':
+            case 'moveRight':
               moveRight(data)
               break
             case 'idle':
               idle(data)
+              break
+            case 'attack':
+              attack(data)
               break
           }
         }

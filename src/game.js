@@ -5,12 +5,11 @@ const { playerColor, playerPosition } = require('./utils')
 let playerId = 1
 let currentPlayerId = null
 const players = []
-const maxPlayers = 5
 
 let undeadId = 1
 let undeads = []
 const MAX_UNDEADS = 2
-const MAX_PLAYERS = 1
+const MAX_PLAYERS = 2
 
 const existingUndeads = () => undeads.length > 0
 
