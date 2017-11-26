@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development node index.js",
-    "e2e": "NODE_ENV=test ava test/e2e",
+    "test": "yarn run e2e && yarn run unit",
+    "e2e": "NODE_ENV=test ava --serial test/e2e",
     "unit": "NODE_ENV=test ava test/unit"
   },
   "dependencies": {

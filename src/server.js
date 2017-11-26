@@ -2,19 +2,22 @@ const http = require('http')
 const WebSocketServer = require('websocket').server
 
 const { broadcast, emit } = require('./socket-actions')
-const { players, createPlayer, undeads, createUndead, canCreateUndead, moveUndeads, deletePlayer } = require('./game')
+const { players, undeads, createUndead, canCreateUndead, moveUndeads, deletePlayer } = require('./game')
 const { info, warning } = require('./logger')
-const { moveLeft, moveRight, idle, attack } = require('./player-actions')
+const { join, moveLeft, moveRight, idle, attack } = require('./player-actions')
 
-const clients = []
-let connection = null
+global.clients = []
+global.connection = null
+
+// const clients = []
+// let connection = null
 
 const originIsAllowed = origin => {
   // put logic here to detect whether the specified origin is allowed.
   return true
 }
 
-const loop = connection => {
+const loop = () => {
   info('Server: loop')
 
   if (canCreateUndead()) {
@@ -26,8 +29,6 @@ const loop = connection => {
 }
 
 module.exports = {
-  connection,
-  clients,
   start: () => {
     const httpServer = http.createServer((request, response) => {
       info(`Server: received request for ${request.url}`)
@@ -59,18 +60,18 @@ module.exports = {
         return
       }
 
-      connection = request.accept('echo-protocol', request.origin)
+      global.connection = request.accept('echo-protocol', request.origin)
 
       // Client index to remove them on 'close' event
-      const index = clients.push(connection) - 1
+      const index = clients.push(global.connection) - 1
 
       info('Server: connection accepted')
 
       if (players.length) {
-        setInterval(() => loop(connection), 1000)
+        setInterval(() => loop(), 1000)
       }
 
-      connection.on('message', message => {
+      global.connection.on('message', message => {
         if (message.type === 'utf8') {
           const { event, data } = JSON.parse(message.utf8Data)
           // info(`Server: received message ${event}`)
@@ -96,8 +97,8 @@ module.exports = {
         }
       })
 
-      connection.on('close', (reasonCode, description) => {
-        info(`Server: peer ${connection.remoteAddress} disconnected`)
+      global.connection.on('close', (reasonCode, description) => {
+        info(`Server: peer ${global.connection.remoteAddress} disconnected`)
 
         // clients.splice(index, 1)
 

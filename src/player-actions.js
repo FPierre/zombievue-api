@@ -1,5 +1,5 @@
 const { broadcast, emit } = require('./socket-actions')
-const { canCreatePlayer, players, undeads } = require('./game')
+const { canCreatePlayer, createPlayer, players, undeads } = require('./game')
 const { info, warning } = require('./logger')
 
 module.exports = {
