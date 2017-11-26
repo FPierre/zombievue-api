@@ -1,8 +1,10 @@
 const http = require('http')
 const WebSocketServer = require('websocket').server
 
+const { broadcast, emit } = require('./socket-actions')
+const { players, createPlayer, undeads, createUndead, canCreateUndead, moveUndeads, deletePlayer } = require('./game')
 const { info, warning } = require('./logger')
-const { heroConnected, players, createPlayer, canCreatePlayer, undeads, createUndead, canCreateUndead, moveUndeads, deletePlayer } = require('./game')
+const { moveLeft, moveRight, idle, attack } = require('./player-actions')
 
 const clients = []
 let connection = null
@@ -10,14 +12,6 @@ let connection = null
 const originIsAllowed = origin => {
   // put logic here to detect whether the specified origin is allowed.
   return true
-}
-
-const emit = (event, data) => connection.sendUTF(JSON.stringify({ event, data }))
-
-const broadcast = (event, data) => {
-  for (let i = 0; i < clients.length; i++) {
-    clients[i].sendUTF(JSON.stringify({ event, data }))
-  }
 }
 
 const loop = connection => {
@@ -31,62 +25,9 @@ const loop = connection => {
   broadcast('undeadsMoved', { undeads })
 }
 
-const join = ({ playerType }) => {
-  console.log(playerType)
-  if (canCreatePlayer()) {
-    emit('joined')
-
-    info('Server: create player')
-    const id = createPlayer(playerType)
-
-    emit('heroCreated', { id, players, undeads })
-    broadcast('playerCreated', { players })
-  } else {
-    emit('maxPlayers')
-  }
-}
-
-const moveLeft = ({ id }) => {
-  // info('Server: moveLeft', id)
-
-  const player = players.find(p => p.id === id)
-
-  if (player) {
-    player.left()
-    broadcast('playerMoved', { players })
-  }
-}
-
-const moveRight = ({ id }) => {
-  // info('Server: moveRight', id)
-
-  const player = players.find(p => p.id === id)
-
-  if (player) {
-    player.right()
-    broadcast('playerMoved', { players })
-  }
-}
-
-const idle = ({ id }) => {
-  const player = players.find(p => p.id === id)
-
-  if (player) {
-    player.idle()
-    broadcast('playerMoved', { players })
-  }
-}
-
-const attack = ({ id }) => {
-  const player = players.find(p => p.id === id)
-
-  if (player) {
-    player.attack()
-    broadcast('playerMoved', { players })
-  }
-}
-
 module.exports = {
+  connection,
+  clients,
   start: () => {
     const httpServer = http.createServer((request, response) => {
       info(`Server: received request for ${request.url}`)
@@ -160,16 +101,14 @@ module.exports = {
 
         // clients.splice(index, 1)
 
-        if (heroConnected()) {
-          deletePlayer()
+        deletePlayer()
 
-          // Avoid disconnection first scenario
-          // if (game.players.length) {
-          //   playerId--
-          // }
+        // Avoid disconnection first scenario
+        // if (game.players.length) {
+        //   playerId--
+        // }
 
-          broadcast('quit', { players })
-        }
+        broadcast('quit', { players })
       })
     })
   }
