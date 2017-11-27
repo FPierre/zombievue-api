@@ -3,7 +3,7 @@ const WebSocketServer = require('websocket').server
 
 const { info, warning } = require('./logger')
 const { broadcast, emit } = require('./socket-actions')
-const { createUndead, canCreateUndead, moveUndeads } = require('./game')
+const { undeads, createUndead, canCreateUndead, moveUndeads } = require('./game')
 const { join, quit, moveLeft, moveRight, idle, attack } = require('./player-actions')
 
 let loopStarted = false
@@ -22,7 +22,8 @@ const loop = () => {
   }
 
   moveUndeads()
-  broadcast('undeadsMoved', { undeads: global.undeads })
+  // OPTIMIZE: broadcast somewhere else
+  broadcast('undeadsMoved', { undeads })
 }
 
 module.exports = {

@@ -1,6 +1,6 @@
 const { info, warning } = require('./logger')
 const { broadcast, emit } = require('./socket-actions')
-const { canCreatePlayer, createPlayer, deletePlayer } = require('./game')
+const { players, undeads, canCreatePlayer, createPlayer, deletePlayer } = require('./game')
 
 module.exports = {
   join: ({ playerType }) => {
@@ -10,8 +10,8 @@ module.exports = {
       info('Server: create player')
       const id = createPlayer(playerType)
 
-      emit('heroCreated', { id, players: global.players, undeads: global.undeads })
-      broadcast('playerCreated', { players: global.players })
+      emit('heroCreated', { id, players, undeads })
+      broadcast('playerCreated', { players })
     } else {
       emit('maxPlayers')
     }
@@ -25,46 +25,46 @@ module.exports = {
     // if (game.players.length) {
     //   playerId--
     // }
-    broadcast('quit', { players: global.players })
+    broadcast('quit', { players })
   },
 
   moveLeft: ({ id }) => {
     // info('Server: moveLeft', id)
 
-    const player = global.players.find(p => p.id === id)
+    const player = players.find(p => p.id === id)
 
     if (player) {
       player.left()
-      broadcast('playerMoved', { players: global.players })
+      broadcast('playerMoved', { players })
     }
   },
 
   moveRight: ({ id }) => {
     // info('Server: moveRight', id)
 
-    const player = global.players.find(p => p.id === id)
+    const player = players.find(p => p.id === id)
 
     if (player) {
       player.right()
-      broadcast('playerMoved', { players: global.players })
+      broadcast('playerMoved', { players })
     }
   },
 
   idle: ({ id }) => {
-    const player = global.players.find(p => p.id === id)
+    const player = players.find(p => p.id === id)
 
     if (player) {
       player.idle()
-      broadcast('playerMoved', { players: global.players })
+      broadcast('playerMoved', { players })
     }
   },
 
   attack: ({ id }) => {
-    const player = global.players.find(p => p.id === id)
+    const player = players.find(p => p.id === id)
 
     if (player) {
       player.attack()
-      broadcast('playerMoved', { players: global.players })
+      broadcast('playerMoved', { players })
     }
   }
 }

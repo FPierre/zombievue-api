@@ -5,16 +5,18 @@ const { playerColor, playerPosition } = require('./utils')
 const MAX_UNDEADS = 2
 const MAX_PLAYERS = 2
 
+const players = []
+const undeads = []
 let playerId = 1
 let undeadId = 1
 let currentPlayerId = null
 
-const existingUndeads = () => global.undeads.length > 0
-const canCreatePlayer = () => global.players.length < MAX_PLAYERS
+const existingUndeads = () => undeads.length > 0
+const canCreatePlayer = () => players.length < MAX_PLAYERS
 const heroConnected = () => currentPlayerId !== null
 
 const createPlayer = type => {
-  global.players.push(new Player(playerId, type))
+  players.push(new Player(playerId, type))
   currentPlayerId = playerId
   playerId++
 
@@ -23,7 +25,7 @@ const createPlayer = type => {
 
 const deletePlayer = () => {
   if (heroConnected()) {
-    const currentPlayer = global.players.find(p => p.id === currentPlayerId)
+    const currentPlayer = players.find(p => p.id === currentPlayerId)
     delete currentPlayer
     currentPlayerId = null
   }
@@ -33,17 +35,17 @@ const canCreateUndead = () => {
   // one in fifty
   const random = Math.floor(Math.random() * 2)
 
-  return global.undeads.length < MAX_UNDEADS && random === 0
+  return undeads.length < MAX_UNDEADS && random === 0
 }
 
 const createUndead = () => {
-  global.undeads.push(new Undead(undeadId))
+  undeads.push(new Undead(undeadId))
   undeadId++
 }
 
 const moveUndeads = () => {
   if (existingUndeads()) {
-    global.undeads.map(undead => {
+    undeads.map(undead => {
       undead.x = undead.direction === 'right' ? undead.x - 3 : undead.x + 3
     })
   }
@@ -51,6 +53,8 @@ const moveUndeads = () => {
 
 module.exports = {
   MAX_PLAYERS,
+  players,
+  undeads,
   canCreatePlayer,
   canCreateUndead,
   createPlayer,

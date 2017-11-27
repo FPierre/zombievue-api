@@ -1,7 +1,7 @@
 require('dotenv').config({ path: `./config/.env.${process.env.NODE_ENV}` })
 
-global.players = []
-global.undeads = []
+// global.players = []
+// global.undeads = []
 global.clients = []
 global.connection = null
 
