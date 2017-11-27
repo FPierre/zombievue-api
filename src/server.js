@@ -1,16 +1,12 @@
 const http = require('http')
 const WebSocketServer = require('websocket').server
 
-const { broadcast, emit } = require('./socket-actions')
-const { players, undeads, createUndead, canCreateUndead, moveUndeads, deletePlayer } = require('./game')
 const { info, warning } = require('./logger')
-const { join, moveLeft, moveRight, idle, attack } = require('./player-actions')
+const { broadcast, emit } = require('./socket-actions')
+const { createUndead, canCreateUndead, moveUndeads } = require('./game')
+const { join, quit, moveLeft, moveRight, idle, attack } = require('./player-actions')
 
-global.clients = []
-global.connection = null
-
-// const clients = []
-// let connection = null
+let loopStarted = false
 
 const originIsAllowed = origin => {
   // put logic here to detect whether the specified origin is allowed.
@@ -19,13 +15,14 @@ const originIsAllowed = origin => {
 
 const loop = () => {
   info('Server: loop')
+  loopStarted = true
 
   if (canCreateUndead()) {
     createUndead()
   }
 
   moveUndeads()
-  broadcast('undeadsMoved', { undeads })
+  broadcast('undeadsMoved', { undeads: global.undeads })
 }
 
 module.exports = {
@@ -67,49 +64,42 @@ module.exports = {
 
       info('Server: connection accepted')
 
-      if (players.length) {
-        setInterval(() => loop(), 1000)
-      }
-
       global.connection.on('message', message => {
-        if (message.type === 'utf8') {
-          const { event, data } = JSON.parse(message.utf8Data)
-          // info(`Server: received message ${event}`)
+        if (message.type !== 'utf8') {
+          return
+        }
 
-          // OPTIMIZE: call directly in a Object of events? eg: `events[event]`
-          switch(event) {
-            case 'join':
-              join(data)
-              break
-            case 'moveLeft':
-              moveLeft(data)
-              break
-            case 'moveRight':
-              moveRight(data)
-              break
-            case 'idle':
-              idle(data)
-              break
-            case 'attack':
-              attack(data)
-              break
-          }
+        const { event, data } = JSON.parse(message.utf8Data)
+        // info(`Server: received message ${event}`)
+
+        // OPTIMIZE: call directly in a Object of events? eg: `events[event]`
+        switch (event) {
+          case 'join':
+            join(data)
+
+            if (!loopStarted) {
+              setInterval(() => loop(), 1000)
+            }
+
+            break
+          case 'moveLeft':
+            moveLeft(data)
+            break
+          case 'moveRight':
+            moveRight(data)
+            break
+          case 'idle':
+            idle(data)
+            break
+          case 'attack':
+            attack(data)
+            break
         }
       })
 
       global.connection.on('close', (reasonCode, description) => {
         info(`Server: peer ${global.connection.remoteAddress} disconnected`)
-
-        // clients.splice(index, 1)
-
-        deletePlayer()
-
-        // Avoid disconnection first scenario
-        // if (game.players.length) {
-        //   playerId--
-        // }
-
-        broadcast('quit', { players })
+        // quit()
       })
     })
   }
