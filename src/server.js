@@ -5,6 +5,7 @@ const { info, warning } = require('./logger')
 const { broadcast, emit } = require('./socket-actions')
 const { undeads, createUndead, canCreateUndead, moveUndeads } = require('./game')
 const { join, quit, moveLeft, moveRight, idle, attack } = require('./player-actions')
+const { hitboxWatch } = require('./hitbox')
 
 let loopStarted = false
 
@@ -15,6 +16,7 @@ const originIsAllowed = origin => {
 
 const loop = () => {
   info('Server: loop')
+
   loopStarted = true
 
   if (canCreateUndead()) {
@@ -24,6 +26,7 @@ const loop = () => {
   moveUndeads()
   // OPTIMIZE: broadcast somewhere else
   broadcast('undeadsMoved', { undeads })
+  hitboxWatch()
 }
 
 module.exports = {
